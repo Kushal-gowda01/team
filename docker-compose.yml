@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: air-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://air_user:air_password@postgres:5432/air_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - NEXT_PUBLIC_APP_NAME=AIR
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - air-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: air-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=air_user
+      - POSTGRES_PASSWORD=air_password
+      - POSTGRES_DB=air_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - air-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U air_user -d air_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: air-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - air-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  air-network:
+    driver: bridge

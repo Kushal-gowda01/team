@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// City metadata
+model City {
+  id          String   @id @default(cuid())
+  name        String
+  country     String
+  latitude    Float
+  longitude   Float
+  timezone    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  aqiRecords  AQIRecord[]
+
+  @@unique([name, country])
+  @@index([name])
+  @@map("cities")
+}
+
+// Environmental records (expanded from AQI-only to comprehensive environmental data)
+model AQIRecord {
+  id              String   @id @default(cuid())
+  cityId          String
+  aqi             Int
+  category        String   // good, moderate, unhealthy_sensitive, unhealthy, very_unhealthy, hazardous
+  dominantPollutant String // PM2.5, PM10, O3, NO2, SO2, CO
+  
+  // Pollutant values (detailed data)
+  pm25            Float?
+  pm10            Float?
+  o3              Float?
+  no2             Float?
+  so2             Float?
+  co              Float?
+  
+  // Environmental data
+  temperature     Float?
+  humidity        Float?
+  pressure        Float?
+  windSpeed       Float?
+  rainfall        Float?   // Rainfall in mm
+  uvIndex         Float?   // UV index
+  visibility      Float?   // Visibility in km
+  
+  // Derived metrics
+  heatIndex       Float?   // Calculated heat index
+  dewPoint        Float?   // Dew point temperature
+  
+  // Health interpretation (generated)
+  healthImpact    String
+  recommendation  String
+  riskLevel       String   @default("moderate") // low, moderate, high, severe
+  
+  // Metadata
+  timestamp       DateTime @default(now())
+  source          String   @default("external_api")
+  dataQuality     String   @default("good") // good, fair, poor
+  
+  // Relations
+  city            City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@index([cityId, timestamp])
+  @@index([timestamp])
+  @@index([category])
+  @@index([riskLevel])
+  @@map("environmental_records")
+}
+
+// System cache metadata (optional - for tracking cache status)
+model CacheMetadata {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  lastUpdated DateTime @default(now())
+  expiresAt   DateTime
+  hitCount    Int      @default(0)
+  
+  @@index([key])
+  @@index([expiresAt])
+  @@map("cache_metadata")
+}
+
+// User preferences (optional - for personalization)
+model UserPreference {
+  id              String   @id @default(cuid())
+  userId          String?  // Optional user ID (for future auth)
+  sessionId       String   @unique // Anonymous session tracking
+  
+  // Preferences
+  defaultCity     String?
+  temperatureUnit String   @default("celsius") // celsius, fahrenheit
+  theme           String   @default("light") // light, dark, system
+  notifications   Boolean  @default(false)
+  
+  // Alert thresholds
+  aqiAlertLevel   Int      @default(150) // Alert when AQI exceeds this
+  tempAlertHigh   Float    @default(35.0) // High temperature alert
+  tempAlertLow    Float    @default(0.0) // Low temperature alert
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastActive      DateTime @default(now())
+  
+  @@index([sessionId])
+  @@map("user_preferences")
+}
