@@ -73,11 +73,11 @@ class OpenWeatherAPIClient {
   private getAQICategory(index: number): number {
     // Convert to rough AQI scale (0-500)
     const aqiMap: { [key: number]: number } = {
-      1: 25,
-      2: 75,
-      3: 125,
-      4: 175,
-      5: 300,
+      1: 25,    // Good
+      2: 75,    // Fair
+      3: 125,   // Moderate
+      4: 175,   // Poor
+      5: 250,   // Very Poor (not hazardous)
     };
     return aqiMap[index] || 0;
   }

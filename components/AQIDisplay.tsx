@@ -65,18 +65,18 @@ export default function AQIDisplay({
       >
         <div className="flex items-center justify-between">
           <div>
-            <p className={`text-lg opacity-90 mb-2 ${category.textColor === '#000000' ? 'text-black' : 'text-black'}`}>
+            <p className={`text-lg opacity-90 mb-2 ${category.textColor === '#FFFFFF' ? 'text-white' : 'text-black'}`}>
               Air Quality Index
             </p>
             <div className="flex items-baseline gap-4">
-              <div className={`text-6xl font-bold ${category.textColor === '#000000' ? 'text-black' : 'text-black'}`}>
+              <div className={`text-6xl font-bold ${category.textColor === '#FFFFFF' ? 'text-white' : 'text-black'}`}>
                 {aqi}
               </div>
               <div>
-                <p className={`text-2xl font-semibold ${category.textColor === '#000000' ? 'text-black' : 'text-black'}`}>
+                <p className={`text-2xl font-semibold ${category.textColor === '#FFFFFF' ? 'text-white' : 'text-black'}`}>
                   {category.label}
                 </p>
-                <p className={`text-sm ${category.textColor === '#000000' ? 'text-black opacity-70' : 'text-black opacity-75'}`}>
+                <p className={`text-sm ${category.textColor === '#FFFFFF' ? 'text-white opacity-90' : 'text-black opacity-75'}`}>
                   {category.description}
                 </p>
               </div>

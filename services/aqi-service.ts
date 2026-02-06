@@ -3,7 +3,7 @@
  * Business logic for AQI data processing
  */
 
-import { aqiAPIClient, ExternalAQIData } from '@/lib/api-client';
+import { openMeteoClient, ExternalAQIData } from '@/lib/open-meteo-client';
 import { getAQICategory } from '@/lib/aqi-utils';
 import { getCompleteHealthInterpretation, getPreventiveActions } from '@/lib/health-utils';
 import { getCachedData, setCachedData } from '@/lib/redis';
@@ -38,18 +38,9 @@ export async function getAQIForCity(cityName: string): Promise<AQIResponse> {
     }
 
     // Fetch from external API
-    logger.info(`Fetching from external AQI API for: ${cityName}`, context);
-    
-    if (!process.env.AQI_API_KEY) {
-      logger.error(
-        'AQI_API_KEY environment variable is not set',
-        context,
-        'Missing API Key'
-      );
-      throw new Error('AQI_API_KEY is not configured. Please set the environment variable.');
-    }
+    logger.info(`Fetching from Open-Meteo API for: ${cityName}`, context);
 
-    const externalData = await aqiAPIClient.fetchAQIByCity(cityName);
+    const externalData = await openMeteoClient.fetchAQIByCity(cityName);
     logger.debug(`Received external AQI data: ${externalData.aqi}`, context);
 
     // Process and enrich data
@@ -105,18 +96,9 @@ export async function getAQIByCoordinates(
     }
 
     // Fetch from external API
-    logger.info('Fetching from external API', context);
-    
-    if (!process.env.AQI_API_KEY) {
-      logger.error(
-        'AQI_API_KEY environment variable is not set',
-        context,
-        'Missing API Key'
-      );
-      throw new Error('AQI_API_KEY is not configured.');
-    }
+    logger.info('Fetching from Open-Meteo API', context);
 
-    const externalData = await aqiAPIClient.fetchAQIByCoordinates(latitude, longitude);
+    const externalData = await openMeteoClient.fetchAQIByCoordinates(latitude, longitude);
 
     // Process and enrich data
     const response = await processAQIData(externalData);
